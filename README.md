@@ -1,4 +1,4 @@
-This repository contains information about LangChain,
+This repository contains information about LangChain.
 
 ## What is LangChain?
 LangChain is an open source orchestration framework for the development of applications using large language models (LLMs). Available in both Python- and Javascript-based libraries, LangChain’s tools and APIs simplify the process of building LLM-driven applications like chatbots and virtual agents. More information can be read here: [LangChain](https://www.ibm.com/think/topics/langchain)
@@ -99,5 +99,6 @@ From there we can use :
 ```powershell
 ollama pull llama3
 ```
+> **Note**: llama3 latest does not support tools. As mentioned [here](https://ollama.com/search?c=tools), you could try instead with llama3.1
 
 The next part of this notes will be located in the file `getting_started.ipynb`, as will go mainly with the exercises and examples of how to use Llama3. Click [here](getting_started.ipynb) to go to the file.
