@@ -99,6 +99,12 @@ From there we can use :
 ```powershell
 ollama pull llama3
 ```
+
+Also a text embedding model will be used, which is a model that converts text into a numeric representation. This model is used to find the most relevant documents to answer questions.
+```powershell
+ollama pull mxbai-embed-large
+```
+
 > **Note**: llama3 latest does not support tools. As mentioned [here](https://ollama.com/search?c=tools), you could try instead with llama3.1
 
 The next part of this notes will be located in the file `getting_started.ipynb`, as will go mainly with the exercises and examples of how to use Llama3. Click [here](getting_started.ipynb) to go to the file.
@@ -199,3 +205,28 @@ An **embedding model** then is an algorithm that takes a piece of text and putpu
  Let's see this example:
 
  ![Semantic representation of words](semanticRepWords.png)
+
+ This image shows each word alongside its semantic embedding. If for example 2 words (or sentences) are close in meaning should be **closer in space** than those of unrelated words. As you can see, each number is a floating-point value, and each of them represents a semantic dimension. To understand a little bit better what **closer** in this context means, let's see the following image:
+
+ ![Word vectors in a multi-dimensional space](wordVectors.png)
+This image shows that the *pet* and *dog* vectors are closer to each other in distance that the **lion** vector. We can also observe that the angles between each plot varies depending on how similar they are. For example, *pet* and *lion* have a wider angle between one another than the *pet* and *dog* do, indicating more similarity between the latter word pairs. The narrower the angle or shorter the distance between two vectors, the closer their similarities.
+
+One effective way to calculate the degree of similarity between two vectors in a multi-dimensional space is by using the **cosine similarity**. **Cosine similarity** computes the dot product of vectors and divides it by the product of their magnitudes to output a number between -1 an 1, where 0 means the vectors share no correlation, -1 means they are absolutely dissimilar, and 1 means they are absolutely identical. Here as an example, cosine similarity between *pet* and *dog* is 0.75, while the cosine similarity between *pet* and *lion* might be 0.1.
+
+The ability to convert words or sentences into embeddings allow us to capture semantic menaing and then perform calculations to find semantic similarities between different sentences enable us to gent an LLM to find the most relevant documents to answers questions.
+
+> Note: Embeddings have a number of interesting properties:
+> - As discussed, points that are closer together have more similar meanings, so a distance function can be used to measure similarity.
+> - Points close to each other can be said to be related; thus, a clustering algorithm can be used to identify topics (or clusters of points) and classify new inputs into one of those topics.
+> - If you average out multiple embeddings, the average embedding can be said to represent the overall meaning of that group; that is, you can embed a long document by:
+>   1. Embedding each page separately.
+>   2. Taking the average of the embeddings of all pages as the book embedding.
+> - There are models that can produce embeddings for nontext context, for instace, images, videos, and sounds, in addition to text. This enables for instance finding images that are most similar or relevant for a given sentence,
+> At glance, embeddings have applications such as:
+> - **Search**: To find the most relevant documents for a given query.
+> - **Clustering**: Given a body of documents, dividing them into groups (for instance, topics)
+> - **Classification**: Given a body of documents, labeling them as belonging to one of several categories.
+> - **Recommendation**: Given a user's history, recommending new content that is similar to what they have liked before.
+> - **Detecting anomalies**: Given a body of documents, finding the ones that are most different from the rest.
+
+The next part of the document will be located in the file `rag.ipynb`, as will go mainly with the exercises and examples of how to use RAGs. Click [here](rag.ipynb) to go to the file.
