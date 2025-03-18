@@ -204,11 +204,11 @@ An **embedding model** then is an algorithm that takes a piece of text and putpu
 
  Let's see this example:
 
- ![Semantic representation of words](semanticRepWords.png)
+ ![Semantic representation of words](img\semanticRepWords.png)
 
  This image shows each word alongside its semantic embedding. If for example 2 words (or sentences) are close in meaning should be **closer in space** than those of unrelated words. As you can see, each number is a floating-point value, and each of them represents a semantic dimension. To understand a little bit better what **closer** in this context means, let's see the following image:
 
- ![Word vectors in a multi-dimensional space](wordVectors.png)
+ ![Word vectors in a multi-dimensional space](img\wordVectors.png)
 This image shows that the *pet* and *dog* vectors are closer to each other in distance that the **lion** vector. We can also observe that the angles between each plot varies depending on how similar they are. For example, *pet* and *lion* have a wider angle between one another than the *pet* and *dog* do, indicating more similarity between the latter word pairs. The narrower the angle or shorter the distance between two vectors, the closer their similarities.
 
 One effective way to calculate the degree of similarity between two vectors in a multi-dimensional space is by using the **cosine similarity**. **Cosine similarity** computes the dot product of vectors and divides it by the product of their magnitudes to output a number between -1 an 1, where 0 means the vectors share no correlation, -1 means they are absolutely dissimilar, and 1 means they are absolutely identical. Here as an example, cosine similarity between *pet* and *dog* is 0.75, while the cosine similarity between *pet* and *lion* might be 0.1.
@@ -230,3 +230,15 @@ The ability to convert words or sentences into embeddings allow us to capture se
 > - **Detecting anomalies**: Given a body of documents, finding the ones that are most different from the rest.
 
 The next part of the document will be located in the file `rag.ipynb`, as will go mainly with the exercises and examples of how to use RAGs. Click [here](rag.ipynb) to go to the file.
+
+## Indexing optimization
+A basic RAG indexing stage involves naive text splitting and embedding of chunks of a given document. However, this approach leads to inconsistent retrieval results and a relatively high occurrence of hallucinations, especially when the data source contains images and tables. To address these issues we can use the following techniques:
+
+### **MultiVectorRetriever**
+If we have a document that contains text and tables, this information can't be simply split into chunks and embedded as context; this could cause the whole table to be lost. To address this issue, we can decouple documents that we want to use for answer synthesis, from a reference that we want to use for retriever. See the following image:
+
+![MultiVectorRetriever](img\multipleRepSingleDoc.png)
+
+For this case, if a document contains tables, we can first generate and embed summaries of table elements, ensuring each summary contains an **id** reference to the full raw table. Then, we store the raw referenced tables in a separate docstore. Finally, when a user's query retrieves a table summary, we pass the entire referenced raw table as context to the final prompt sent to the LLM for answer synthesis. This approach allow us to provide the model with the full context of information required to answer the question.
+
+Let's see an [example](src\multiVectorRetriever.ipynb) of how this works.
