@@ -184,6 +184,9 @@ In this example the embedding for *I haven't seen a sunny day in weeks* would be
 ```
 This is called a **bag-of-words** model, and these embeddings are called **sparse embeddings** or sparse vectors, because a lot of the numbers in this vector are zeros.
 
+> **Note**: Early NLP techniques don't suit for most advanced situations, further research used approaches such as **word2vec** and **GloVe** to generate embeddings that capture the meaning of words. These embeddings are called **dense embeddings** or dense vectors, because most of the numbers in this vector are not zeros. Also **Recurrent neural networks (RNNs)** and **Long short-term memory (LSTM)** networks were used to generate embeddings for sequences of words, such as sentences or paragraphs. This were more effective however, computational costs were high. **Transformers** were introduced to address this issue, and they are the basis for most LLMs.  By using the **self-attention mechanism**, that allows the model to learn contextual relationships between all words (or a set of tokens) in the input simulataneously, it does this by calculationg the importance of each word concerning other words in sequence. This attention is applied to derive contextual representations for downstream tasks such as language modeling or machine translation. One major benefit of the transformer architecture is its ability to perform parallel computation with a long sequence of words. Other models use alternative techniques, such as **generative adversarial networs (GANs)** or **variational autoencoders**. **GANs** have 2 networks, one that is tasked with generating synthetic samples that mimic real data *generator*, and another is a *discriminator* that tries to distinguish between real and synthetic samples. The generator is trained to fool the discriminator, and the discriminator is trained to detect the fake samples. **Variational autoencoders** are a type of neural network that learns to encode and decode data. The encoder network learns to 
+the input data from the latent space. The latent space is a lower-dimensional representation of the input data that captures its most important features. The encoder and decoder networks are trained together to minimize the difference between the input data and the reconstructed data. The latent space can be used to generate new data samples by sampling from it and decoding the samples with the decoder network.
+
 This model can be used for:
 
 - **Keyword search**: You can find which documents contain a given word or words.
@@ -277,3 +280,20 @@ A RAG system for an AI app typically follows 3 core stages:
 
 This process can be seen as the following image:
 ![RAG stages](img/RAG_STAGES.png)
+
+Let's see a full [example](src/ragFullExample.ipynb) of how to use RAGs starting with indexing stage.
+
+
+
+## Useful metrics while fine-tunning a model:
+- **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
+- **Perplexity**: This ranges from 1 to infinity: It measures a language model's ability to predict the next token in a sequence. Lower perplexity values are better.
+
+## Summary of large documents
+This can be done using *load_summarize_chain* method using *map_reduce* chain type. Here is a basic example of how to use it:
+```python
+from langchain.chains.summarize import load_summarize_chain
+
+summary_chain = load_summarize_chain(llm=llm, chain_type="map_reduce", verbose=False)
+```
+Another example is available online [here](https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/06_OpenSource_examples/text-generation-with-langchain/04_long_text_summarization_using_LCEL_chains_on_langchain.ipynb).
