@@ -292,6 +292,12 @@ In **logical routing**, we give the LLM knowledge of the various data sources at
 In order to do that, we need a **function calling** model like LLAMA 3.1, or GPT-4o to help classify each query into one of the available routes. A function call involves defining a schema that the model can use to generate arguments of a function based on the query. This enable us to generate structured outputs that can be used to run other functions. Let's see an [example](src/logicalRouting.ipynb) of how to use it.
 
 ### Semantic Routing
+This routing involves embedding various prompts that represent various data sources alongside the user's query and then performing vector similarity search to retrieve the most similar prompt. The following image gives an example: 
+![Semantic routing](img/Semantic%20Routing.png)
+
+Let's see a [basic example](src/semanticRouting.ipynb) of how to use it.
+
+### Query construction
 
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
