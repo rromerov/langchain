@@ -321,6 +321,44 @@ The follow image shows a visual of the process:
 The [following script](src/textToSQL.ipynb) shows a full example.
 
 ## Adding memory to chatbots using LangGraph
+Large language models are *stateless*, this means that everytime you ask one new question, there is no memory about previous questions or responses. To keep historical information for the model, we need a robust memory system that will keep track of previous conversations and context. This previous information can be included in the final prompt sent to the LLM. The memory and retrieval used to generate context-aware answers from an LLM can be seen in the following image: 
+
+![Memory LLM](img/Memory%20LLM.png)
+
+There are 2 core design decisions behind any robust memory system:
+* How state is stored
+* How state is queried
+
+A simple way to build a chatbot memory system that incorporates effective solutions to these desing decisions is to store and reuse the history of all chat interactions between the user and the model.The state of this memory system can be:
+
+- Stored as list of messages.
+- Updated by appending recent messages after each turn
+- Appended into the prompt by inserting the messages into the prompt.
+
+The following image shows a simple memory system:
+
+![Simple memory system](img/simple_memory_system.png)
+
+Let's see an [example](src/simpleMemorySystem.ipynb)
+
+> Note: While this is simple and works, when taking your application to production, more challenges will show related to managing memory at scale, such as:
+>
+> - You will need to update the memory after every interaction, atomically (i.e., don't record only the question or only the answer in the case of failure).
+> - You want to store these memories in durable storage, such as relational database.
+> - You want to control how many and which messages are stored for later, and how many of these are used for new interactions.
+> - You will want to inspect and modify this state (for now, just a list of messages) outside a call to an LLM.
+
+## LangGraph
+This library was built to implement multiactor, multistep congnitive architectures, called **graphs**.
+
+Is used for single-actor applications to multiactor applications as you can see in the following image:
+![LLM](img/LLM.png)
+
+An LLM propmt is much more powerful when paired up with a search engine (best at finding current facts), or even when paired with different LLM prompts. In order to do so, an application with multiple actors needs a coordination layer to do these things:
+
+- Define the actors involved (the nodes in a graph) and how they hand off work to each other (the edges in that graph).
+- Schedule execution of each actor at the appropiate time -in parallel if needed- with deterministic results.
+
 
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
