@@ -307,6 +307,21 @@ There are several ways to do this:
 ### 1. Text-to-Metadata Filter
 Most vector stores provide the ability to limit your vector search based on metadata. During the embedding process, we can attach metadata key-value pairs to vectors in an index and then later specify filter expressions when you query in the index. LangChain provides a **SelfQueryRetriever** that abstracts this logic and makes it easier to translate natural language queries into structured queries for various data sources. The self-querying utilizes an LLM to extract and execute the relevant metadata filters based on a user's query and predefined metadata schema. Let's see a full [example](src/textToMetadataFilter.ipynb) of how to use it.
 
+### 2. Text-to-SQL
+SQL and relational databases are important sources of structured data, but they don't interact directly with natural language. Although we can simpy use the LLM ton translate a user's query to SQL queries, there is little margin for error.
+
+Fo effective text to SQL translation you can do the following strategies:
+- **Database Description**: To ground SQL queries, an LLM must have with an accurate description of the database. One common text-to-SQL prompt employs an idea reported in this paper and others: provide the LLM with a **CREATE TABLE** description for each table, including column names and types. We can also provide a few (for instance, three) example rows from the table.
+
+- **Few-shot examples**: Feeding the prompt with few-shot examples of question-query matches can improve the query generation accuracy. This can be achieved by simply appending standard static examples in the prompt to gide the agent on how it should build queries based on questions.
+
+The follow image shows a visual of the process:
+![Text-to-SQL](img/text-To-SQL.png)
+
+The [following script](src/textToSQL.ipynb) shows a full example.
+
+## Adding memory to chatbots using LangGraph
+
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
 - **Perplexity**: This ranges from 1 to infinity: It measures a language model's ability to predict the next token in a sequence. Lower perplexity values are better.
