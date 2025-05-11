@@ -359,6 +359,21 @@ An LLM propmt is much more powerful when paired up with a search engine (best at
 - Define the actors involved (the nodes in a graph) and how they hand off work to each other (the edges in that graph).
 - Schedule execution of each actor at the appropiate time -in parallel if needed- with deterministic results.
 
+As each actor hands off work to another, we need to make sense of the back-and-forth between multiple actors. We need to know what order it happens in, how many times each actor is called, and so on. To do this, we can model the interaction between the actors as happening across multiple discrete steps in time. When one actor hands off work to another actor, it results in the scheduling of the next step of the computation, and so on, until no more actors hand off work to others, and the final result is reached.
+
+The following image shows an example of this process:
+![From multistep to stateful applications](img/stateful_app.png
+)
+
+Communication across steps requires tracking some state-otherwise, when you call the LLM actor the second time, you'd get the same result as the first time. It is very helpful to pull this state out of each of the actors and have all actors collaborate on updating a single central state. With a single central state, we can:
+
+- Snapshot and store the central state during or after each computation.
+- Pause and resume execution, which makes it easy to recover from errors.
+- Implement human-in-the-loop controls.
+
+Each *graph* contains the following:
+
+- *State*: 
 
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
