@@ -127,7 +127,7 @@ To overcome this challenge it involves 2 steps:
 If you for example would like to answer questions based on a document you can follow these steps:
 1. *Extract* all the text from this particular document.
 2. *Split* it into manageable chunks.
-3. *Convert** these chunks into numbers that computers can understand.
+3. *Convert* these chunks into numbers that computers can understand.
 4. *Store* these number representations of your text somewhere that makes it easy and fast to retrieve the relevant sections of your document to answer a given question.
 
 Can be seen as the following table:
@@ -251,7 +251,7 @@ RAG frameworks need to handle lower-level questions that reference specific fact
 
 *Recursive abstractive processing for tree-organized retrieval (RAPTOR)* is an effective strategy that involves creating documents that capture higher-level concepts, embedding and clustering those documents, and then summarizing each cluster. This is done recursively, producing a tree of summaries with increasingly high-level concepts. The summaries and initial documents are indexed together, giving coverage across lower-to-higher-level user questions. As you can see in the following image:
 
-![RAPTOR](img/raptor.png)
+![RAPTOR](img/RAPTOR.png)
 
 ### **ColBERT: Optimizing Embeddings
 
