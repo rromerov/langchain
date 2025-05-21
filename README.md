@@ -373,7 +373,20 @@ Communication across steps requires tracking some state-otherwise, when you call
 
 Each *graph* contains the following:
 
-- *State*: 
+- *State*: The data received from outside the application, modified and produced by the application while it’s running.
+
+- *Nodes*: Each step to be taken. Nodes are simply Python/JS functions, which receive the current state as input and can return an update to that state (that is, they can add to it and modify or remove existing data).
+
+- *Edges*: The connections between nodes. Edges determine the path taken from the first node to the last, and they can be fixed (that is, after Node B, always visit node D) or conditional (evaluate a function to decide the next node to visit after node C).
+
+Let's see a simple [LangGraph example](src/simple_chatbot.ipynb).
+
+Persistent memory can be made using MemorySaver with Langchain Checkpoint or using SQLite, Postgres or other databases
+
+```python
+
+graph = builder.compile(checkpointer=MemorySaver())
+```
 
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
