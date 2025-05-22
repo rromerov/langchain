@@ -388,6 +388,59 @@ Persistent memory can be made using MemorySaver with Langchain Checkpoint or usi
 graph = builder.compile(checkpointer=MemorySaver())
 ```
 
+# Cognitive Architectures with LangGraph
+We can categorize several popular approaches to building LLM applications based on their position along a spectrum of autonomy—specifically, which of the three key tasks are handled by the LLM versus those managed by the developer or end user.  
+These approaches are often referred to as **cognitive architectures**.
+
+In the field of artificial intelligence, the term *cognitive architecture* traditionally refers to models of human reasoning and their computational implementations.  
+
+A *step* is, for instance, retrieval of relevant documents (RAG), or calling an LLM with a chain-of-thought prompt.
+
+## Levels of LLM Application Design
+
+Below is a progression of common LLM application design patterns, ranging from traditional programming to increasingly autonomous cognitive architectures.
+
+---
+
+### **0: Code**
+This level doesn’t involve LLMs at all—hence the label "0."  
+It's simply conventional software development, where the logic and behavior are entirely defined by the developer.
+
+---
+
+### **1: LLM Call**
+At this level, an application makes a single call to an LLM to complete a specific task—such as translating or summarizing text.  
+This is typically part of a larger system where the LLM plays a supporting role.
+
+---
+
+### **2: Chain**
+This involves multiple LLM calls executed in a predefined sequence.  
+For example, a text-to-SQL app might include:
+
+- **Step 1**: An LLM call that converts a user’s natural language query into a SQL query, using both the user input and a database schema provided by the developer.
+- **Step 2**: A second LLM call that generates a plain-language explanation of the SQL query, helping the user verify that the query matches their intent.
+
+---
+
+### **3: Router**
+Here, the LLM isn't just executing steps—it’s deciding **which** steps to take.  
+Unlike the fixed sequence in a chain, a router dynamically selects from a set of predefined paths.
+
+A common example is a RAG (Retrieval-Augmented Generation) system with multiple document indexes:
+
+- **Step 1**: An LLM determines which index to query, based on the user's input and a description of each index.
+- **Step 2**: The selected index is searched to retrieve the most relevant documents.
+- **Step 3**: Another LLM call generates a final response using the retrieved documents and the original query.
+
+---
+
+Let's see the first architecture [LLM Call](src/LLM_Call_example.ipynb)
+
+Second architecture can be seen in the following [script](src/LLM_chain.ipynb)
+
+Router architecture example [click here](src/LLM_router.ipynb)
+
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
 - **Perplexity**: This ranges from 1 to infinity: It measures a language model's ability to predict the next token in a sequence. Lower perplexity values are better.
