@@ -441,6 +441,171 @@ Second architecture can be seen in the following [script](src/LLM_chain.ipynb)
 
 Router architecture example [click here](src/LLM_router.ipynb)
 
+Now let's see agent architecture:
+# Agent Architecture
+
+In the field of artificial intelligence, there is a long history of creating **(intelligent) agents**, which can be most simply defined as _“something that acts,”_ in the words of Stuart Russell and Peter Norvig in their *Artificial Intelligence* (Pearson, 2020) textbook.
+
+The word **acts** carries more meaning than meets the eye:
+
+- Acting requires some capacity for **deciding what to do**.
+- Deciding what to do implies **having access to more than one possible course of action**. A decision without options is no decision at all.
+- In order to decide, the agent also needs access to **information about the external environment** (anything outside of the agent itself).
+
+**What is an Agentic LLM Application?**
+
+An **agentic LLM application** is one that uses a large language model to **pick from one or more possible courses of action**, given some context about the current state of the world or a desired next state.
+
+These attributes are typically implemented by combining two prompting techniques:
+
+---
+
+1. Tool Calling
+
+Include a list of **external functions** that the LLM can make use of in your prompt (i.e., the actions it can decide to take) and provide **instructions** on how to format its choice in the output it generates.
+
+---
+
+2. Chain-of-Thought Prompting
+
+Researchers have found that LLMs _make better decisions_ when given instructions to reason about complex problems by breaking them down into granular steps. This is done either by:
+
+- Adding instructions like **“think step by step”**
+- Including **examples** of questions and their decomposition into multiple steps/actions
+
+---
+
+**Example Prompt (Using Both Techniques)**
+
+```text
+Tools:
+search: this tool accepts a web search query and returns the top results.
+calculator: this tool accepts math expressions and returns their result.
+
+If you want to use tools to arrive at the answer, output the list of tools and
+inputs in CSV format, with the header row: tool,input.
+
+Think step by step; if you need to make multiple tool calls to arrive at the
+answer, return only the first one.
+
+How old was the 30th president of the United States when he died?
+
+tool,input
+```
+
+**Example Output from Agentic LLM Prompt**
+
+When the prompt is run against `gpt-3.5-turbo` with the following parameters:
+
+- **Temperature**: `0` (ensures deterministic output, i.e., the LLM follows the desired format strictly)
+- **Stop sequence**: `newline` (the LLM stops generating after one action)
+
+The model produces a **single action**, as expected, because the prompt only asked for one. The output is returned in **CSV format**, just like the prompt instructed.
+
+```text
+search,30th president of the United States
+```
+
+More recent models have been fine-tuned to improve their performance for tool-calling and chain of thought applications, removing the need for adding specific instructions to the prompt.
+
+```text
+add example prompt and output for tool-calling model
+```
+
+## The Plan-Do Loop
+
+What makes the **agent architecture** different from previous architectures is the concept of the **LLM-driven loop**.
+
+### What is a loop?
+Every programmer is familiar with the idea of a loop: executing the same logic multiple times until a stop condition is met. In agentic LLM systems, the **LLM controls** this stop condition.
+
+In each iteration of the loop, the LLM:
+1. **Plans** an action or tool to use.
+2. **Executes** the selected tool.
+3. **Decides** whether to stop or continue.
+
+---
+
+### 🔁 Example of a ReAct Agent Loop
+
+We want to answer:  
+**"How old was the 30th president of the United States when he died?"**
+
+### Step 1: Initial Tool Selection
+
+Prompt to the LLM:
+
+```
+tool,input
+search,30th president of the United States
+```
+
+**Output from `search` tool:**
+
+```
+Calvin Coolidge (born John Calvin Coolidge Jr.; July 4, 1872 – January 5, 1933)
+was an American attorney and politician who served as the 30th president 
+of the United States from 1923 to 1929.
+```
+
+---
+
+### Step 2: Use the Output of the Previous Tool
+
+LLM is re-prompted with:
+
+```
+Tools:
+- search: this tool accepts a web search query and returns the top results.
+- calculator: this tool accepts math expressions and returns their result.
+- output: this tool ends the interaction. Use it when you have the final answer.
+
+Think step by step. If you need multiple tool calls, return only the first one.
+
+How old was the 30th president of the United States when he died?
+
+tool,input
+search,30th president of the United States
+
+search: Calvin Coolidge (born John Calvin Coolidge Jr.; July 4, 1872 – January 5, 1933)
+
+tool,input
+calculator,1933 - 1872
+```
+
+**Output from `calculator` tool:**
+
+```
+61
+```
+
+---
+
+### Step 3: LLM Uses the Final Tool
+
+Now the LLM has the needed data and completes the loop:
+
+```
+tool,input
+output,61
+```
+
+---
+
+### 🧠 Why This Matters
+
+This agent architecture is called **ReAct** — short for **Reasoning and Acting**.  
+The LLM reasons step-by-step and chooses actions (tools) accordingly.
+
+### Key features:
+- **Autonomous step selection**
+- **Dynamic tool usage**
+- **LLM decides when to stop**
+
+This approach gives LLMs more **agency** and enables more flexible, intelligent systems.
+
+Let's see an example of the ReAct A.K.A "The Plan-Do Loop" [here](src/LLM_Plan-Do_Loop.ipynb)
+
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
 - **Perplexity**: This ranges from 1 to infinity: It measures a language model's ability to predict the next token in a sequence. Lower perplexity values are better.
