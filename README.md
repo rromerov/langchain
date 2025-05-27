@@ -650,6 +650,88 @@ Next, we’ll walk through an [example](src/LLM_Always_Call_a_tool_first.ipynb) 
 
 # More Agent Architectures
 
+## Reflection (also known as self-critique)
+
+This technique draws inspiration from human reasoning.  
+It involves allowing your LLM application to **analyze its previous outputs and decisions**,  
+enabling it to **learn from past iterations** and incorporate that reflection into future behavior.
+
+By reflecting, the agent can:
+- Identify past mistakes
+- Refine strategies
+- Improve consistency across interactions
+
+Reflection is the creation of a loop between a creator prompt and a reviser prompt. It can be combined with other techniques including chain-of-thought and tool calling.
+
+Let's see an [example](src/LLM_Reflection.ipynb)
+
+## Subgraphs in LangGraph
+Before diving into multi-agent architectures, it's important to understand a foundational concept in LangGraph that enables them: **subgraphs**.
+
+A **subgraph** is simply a graph used as part of another (parent) graph.
+
+---
+
+Common Use Cases for Subgraphs
+
+1. **Multi-agent Systems**  
+   Subgraphs enable the modular design of agents that can work independently and collaboratively within a larger system.
+
+2. **Code Reuse**  
+   When a group of nodes is needed across multiple graphs, defining them as a subgraph allows you to reuse them without duplication.
+
+3. **Team Collaboration**  
+   Different teams can independently build and maintain subgraphs.  
+   As long as the **subgraph’s interface** (i.e., input and output schemas) is respected, the parent graph doesn’t need to know the internal workings of the subgraph.
+
+---
+
+Two Ways to Add Subgraphs to a Parent Graph
+
+1. Add a Node that Directly Calls the Subgraph
+
+- Useful when the **parent graph and subgraph share the same state keys**.
+- No need to transform state between the parent and the subgraph.
+
+2. Add a Node that Calls a Function Which Invokes the Subgraph
+
+- Ideal when the **parent and subgraph use different state schemas**.
+- Allows for **custom transformation of state** before or after calling the subgraph.
+
+---
+
+
+Let’s take a look at how each of these integration methods works in practice.
+
+### Calling a Subgraph Directly
+
+The simplest way to create subgraph nodes is to attach a subgraph directly as a node.  
+This method requires that the parent graph and the subgraph **share state keys**,  
+as those keys are used for communication between the two graphs.
+
+If the graphs do not share any state keys, refer to the next section on using custom transformation functions.
+
+> Note:  
+> If you pass **extra keys** to the subgraph node (keys not included in the shared schema),  
+> they will be **ignored** by the subgraph.  
+> Likewise, if the subgraph returns extra keys, they will be **ignored** by the parent graph.
+
+Let’s take a [look](src/LLM_subgraph_call_directly.ipynb) at how this works in practice.
+
+
+---
+
+## Multi-agent
+
+Just as teams of people can achieve more than individuals alone,  
+some problems are better solved by **teams of LLM agents** working together.
+
+In a multi-agent setup:
+- Each agent can have a distinct role or specialization.
+- Agents may collaborate, critique each other, or delegate tasks.
+- Complex workflows can be distributed and coordinated for better performance and scalability.
+
+
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
 - **Perplexity**: This ranges from 1 to infinity: It measures a language model's ability to predict the next token in a sequence. Lower perplexity values are better.
