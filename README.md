@@ -526,7 +526,7 @@ In each iteration of the loop, the LLM:
 
 ---
 
-### 🔁 Example of a ReAct Agent Loop
+###  Example of a ReAct Agent Loop
 
 We want to answer:  
 **"How old was the 30th president of the United States when he died?"**
@@ -592,7 +592,7 @@ output,61
 
 ---
 
-### 🧠 Why This Matters
+###  Why This Matters
 
 This agent architecture is called **ReAct** — short for **Reasoning and Acting**.  
 The LLM reasons step-by-step and chooses actions (tools) accordingly.
@@ -605,6 +605,50 @@ The LLM reasons step-by-step and chooses actions (tools) accordingly.
 This approach gives LLMs more **agency** and enables more flexible, intelligent systems.
 
 Let's see an example of the ReAct A.K.A "The Plan-Do Loop" [here](src/LLM_Plan-Do_Loop.ipynb)
+
+## Always calling a Tool First
+In the **standard agent architecture**, the LLM is always tasked with deciding **which tool to call next**.  
+This offers a major advantage:
+
+-  **Flexibility**: The LLM can dynamically adapt the application's behavior based on each unique user query.
+
+---
+
+###  The Tradeoff: Unpredictability
+
+However, this flexibility comes with a cost—**unpredictability**.  
+There are cases where this is not ideal. For example, if you're building an app where:
+
+> **The `search` tool should always be called first**
+
+Then it might make more sense to **hardcode that step**, rather than asking the LLM to decide. Why?
+
+---
+
+###  Advantages of Hardcoding the First Tool Call
+
+-  **Lower Latency**:  
+  You eliminate the **initial LLM call** whose only purpose would be to decide to use the search tool—saving time and resources.
+
+-  **More Reliable Behavior**:  
+  Prevents the LLM from **mistakenly skipping** the search step in cases where it's actually needed.
+
+---
+
+###  When Not to Use This Strategy
+
+If your application **doesn’t have a clear rule** like “always call this tool first,” then **imposing such a constraint can backfire**:
+
+-  You might limit the agent's ability to reason dynamically.
+-  It could reduce the system’s overall performance and flexibility.
+
+---
+
+##  Let’s See It in Practice
+
+Next, we’ll walk through an [example](src/LLM_Always_Call_a_tool_first.ipynb) that **manually initiates a tool call** (like `search`) **before the LLM enters the decision loop**.
+
+# More Agent Architectures
 
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
