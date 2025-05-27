@@ -1,2 +1,3 @@
 data/Chinook*
 .env
+**/__pycache__/ 
