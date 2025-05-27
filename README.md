@@ -718,6 +718,22 @@ If the graphs do not share any state keys, refer to the next section on using cu
 
 Let’s take a [look](src/LLM_subgraph_call_directly.ipynb) at how this works in practice.
 
+### Calling a Subgraph with a Function
+In some cases, you may want to define a subgraph that uses a completely different state schema  
+from the parent graph. When this happens, the direct subgraph attachment method won't work.
+
+Instead, you can define a **node with a function that calls the subgraph**.
+
+This function is responsible for:
+
+- **Transforming the parent graph's state** into the input schema expected by the subgraph.
+- **Invoking the subgraph** with the transformed state.
+- **Transforming the subgraph’s output state** back into the schema expected by the parent graph.
+- **Returning the final state update** to the parent graph.
+
+Let’s take a look at [how this pattern is implemented](src/LLM_subgraph_with_a_function.ipynb).
+
+## Multi-Agent Architectures
 
 ---
 
