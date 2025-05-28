@@ -733,8 +733,6 @@ This function is responsible for:
 
 Let’s take a look at [how this pattern is implemented](src/LLM_subgraph_with_a_function.ipynb).
 
-## Multi-Agent Architectures
-
 ---
 
 ## Multi-agent
@@ -747,6 +745,68 @@ In a multi-agent setup:
 - Agents may collaborate, critique each other, or delegate tasks.
 - Complex workflows can be distributed and coordinated for better performance and scalability.
 
+**Multi-Agent Architectures**
+
+As LLM agents become larger and more complex, they can start facing performance challenges such as:
+
+- Being given too many tools to choose from, which leads to poor tool selection.
+- Handling overly complex context, where the size and number of elements in the prompt exceed the model’s effective capacity.
+- The need for specialized logic or workflows, such as planning, research, or mathematical reasoning.
+
+To address these issues, one effective strategy is to **break the system into multiple smaller, independent agents**,  
+each responsible for a focused task. These agents are then composed into a **multi-agent system**.
+
+Each agent in the system can vary in complexity:
+
+- Some may be simple: just a prompt and a single LLM call.
+- Others may be more advanced, such as ReAct agents capable of reasoning and taking actions through tools.
+
+This modular design improves scalability, flexibility, and maintainability of your LLM-based applications.
+
+**1. Network**
+
+In a networked multi-agent system, each agent can communicate with every other agent.  
+Any agent has the autonomy to decide which agent should be executed next.  
+This design supports highly dynamic workflows but can be more complex to manage and debug.
+
+---
+
+**2. Supervisor**
+
+In this architecture, each agent communicates with a single central agent called the **supervisor**.  
+The supervisor is responsible for deciding which agent (or group of agents) should be invoked next.
+
+A practical variant of this approach implements the supervisor as a single **LLM call with tools**,  
+enabling flexible planning and execution.
+
+---
+
+**3. Hierarchical**
+
+This is an extension of the supervisor model that introduces multiple layers of supervision.  
+A **supervisor of supervisors** structure allows for more complex and modular control flows.
+
+Each supervisor may manage its own group of agents or even other supervisors,  
+creating a tree-like or layered decision-making system.
+
+---
+
+**4. Custom Multi-Agent Workflow**
+
+In a custom workflow, agents communicate with only a **subset** of other agents.  
+Some transitions are **deterministic**, while others are dynamic and based on agent decisions.
+
+Only specific agents are permitted to decide which agents to call next.  
+This architecture offers flexibility with targeted control over communication and decision flow.
+
+---
+
+The next section will take a closer look at the **supervisor architecture**,  
+which offers a strong balance between capability and simplicity.
+
+Let's see an example of [Supervisor Architecture](src/supervisor_architecture.ipynb)
+
+# Patterns to Make the Most of LLMs
 
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
