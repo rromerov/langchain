@@ -71,7 +71,7 @@ inputs in CSV format, with this header row `tool,input`.
 Who could you consider to be the most famous person in the world?
 ```
 
-### Few-Shot Prompting
+### Few-Shot Prompting AKA In Context Learning
 This focus is based on providing some questions and answers, which helps the model to learn to perform a new task withoyt the need of additional training or fine-tunning.
 
 This approach counts with 2 options:
@@ -253,9 +253,9 @@ RAG frameworks need to handle lower-level questions that reference specific fact
 
 ![RAPTOR](img/RAPTOR.png)
 
-### **ColBERT: Optimizing Embeddings
+### **ColBERT: Optimizing Embeddings**
 
-One of the current challenges of using embeddings models during the indexing stage, is that they compress text into vectors that capture the semantic content of the docuemtn. Although this is useful for retrieval, embedding irrelevant or redundant content may cause hallucinations in the final LLM output.
+One of the current challenges of using embeddings models during the indexing stage, is that they compress text into vectors that capture the semantic content of the document. Although this is useful for retrieval, embedding irrelevant or redundant content may cause hallucinations in the final LLM output.
 
 You can try the following approach to solve this problem:
 1. Generate contextual embeddings for each token in the document and query.
@@ -807,6 +807,360 @@ which offers a strong balance between capability and simplicity.
 Let's see an example of [Supervisor Architecture](src/supervisor_architecture.ipynb)
 
 # Patterns to Make the Most of LLMs
+LLMs today have some significant limitations, but that doesn’t mean  
+your ideal LLM application is out of reach.
+
+The key is to **design the user experience** in a way that works around—  
+and ideally leverages—those limitations.
+
+---
+
+One of the central challenges is the trade-off between:
+
+- **Agency**: The LLM’s ability to act autonomously.
+- **Reliability**: The extent to which its outputs can be trusted.
+
+This trade-off is at the heart of LLM app development.
+
+An application becomes more useful as it takes **more actions on its own**,  
+reducing the need for user intervention.  
+
+However, increasing agency too much can lead to **unintended or undesirable behavior**.
+
+The goal is to find a balance—**enabling intelligent autonomy**  
+while maintaining a high degree of control and trustworthiness.
+
+We can visualize the **agency vs. reliability trade-off** as a **frontier**.  
+Each point on the curved line of this frontier represents an **optimal LLM architecture**  
+for some application—reflecting different choices between autonomy and trustworthiness.
+
+For example:
+
+- The **Chain architecture** has **low agency** but **high reliability**.
+- The **Agent architecture** has **high agency**, which comes at the cost of **lower reliability**.
+
+---
+
+Let’s now briefly look at other important objectives you may want to optimize for in your LLM application.  
+Each app is designed with a unique mix of these objectives:
+
+**Latency**  
+- Goal: Minimize time to deliver the final result  
+- Trade-off: Often conflicts with reliability and autonomy
+
+**Autonomy**  
+- Goal: Minimize need for human intervention  
+- Trade-off: May reduce reliability or increase latency in decision loops
+
+**Variance**  
+- Goal: Minimize variation across multiple invocations of the same input  
+- Trade-off: Limits creativity and adaptability of responses
+
+---
+
+This list is **not exhaustive**, but serves to highlight the kinds of **trade-offs** involved in app design.
+
+Each objective tends to work **against the others**:
+
+- Maximizing reliability may increase latency or reduce autonomy.
+- Full autonomy can reduce trust unless well-constrained.
+- The lowest-latency app would be one that returns nothing—**fast, but useless**.
+
+Careful balancing of these objectives is key to building effective and usable LLM applications.
+
+What we really want as application developers is to **shift the frontier outward**.
+
+That means:
+
+- For the **same level of reliability**, we aim to achieve **higher agency**.
+- For the **same level of agency**, we aim to improve **reliability**.
+
+This leads to better-performing LLM applications without compromising trust or flexibility.
+
+---
+
+Here are several strategies that can help move the frontier outward:
+
+**Streaming / Intermediate Output**  
+- Users are more tolerant of higher latency if they can see progress or receive intermediate results.  
+- Improves perceived responsiveness and engagement.
+
+**Structured Output**  
+- Enforcing a predefined output format (e.g., JSON, CSV, HTML) helps ensure consistency.  
+- Makes outputs easier to parse, validate, and use in downstream systems.
+
+**Human in the Loop**  
+- High-agency systems benefit from live human oversight.  
+- Allows for actions like: interrupting, approving, forking, or undoing an agent’s behavior in real time.
+
+**Double Texting Modes**  
+- In longer-running tasks, users might send new input before the current output is complete.  
+- Apps should be able to handle concurrent or overlapping interactions gracefully.
+
+---
+
+Each of these techniques can help **extend the capabilities of your application**  
+without sacrificing user experience, predictability, or control.
+
+## **Structured Output**
+
+It is often essential for LLMs to return **structured output**, either because:
+
+- A downstream component expects the output to follow a **specific schema**  
+  (i.e., defined field names and types), or
+- To reduce **variance** in responses that would otherwise be unstructured, free-form text.
+
+---
+
+There are several strategies available to achieve structured output, depending on the LLM in use:
+
+**Prompting**  
+- Ask the LLM (politely) to return output in a specific format (e.g., JSON, XML, or CSV).  
+- **Pros**: Works with almost any LLM.  
+- **Cons**: Only a suggestion—**not guaranteed** to return valid structured output.
+
+**Tool Calling**  
+- Used with LLMs fine-tuned to choose from a list of predefined schemas.  
+- For each schema, you define:
+  - A **name** (identifier)
+  - A **description** (when to use it)
+  - A **schema** (usually in **JSONSchema** format)
+- The LLM selects the appropriate tool and generates output that matches the schema.
+
+**JSON Mode**  
+- Available in some LLMs (e.g., recent OpenAI models).  
+- Enforces output as a **valid JSON document**.  
+- This mode provides a **strong guarantee** of format conformity.
+
+---
+
+**Model Support and LangChain Integration**
+
+Different LLMs support different combinations of these strategies.  
+To simplify usage, **LangChain models** provide a unified interface:  
+`with_structured_output`.
+
+This method:
+- Accepts a **JSONSchema**, or
+- A typed model such as **Pydantic** (Python) or **Zod** (JavaScript)
+
+It automatically configures:
+- The required model parameters
+- The appropriate output parsers
+
+If a model supports multiple structured output modes, LangChain allows you to **configure which strategy to use**.
+
+This ensures greater reliability and consistency across LLM responses,  
+especially in applications requiring predictable and machine-readable outputs.
+
+let's see an [example](src/schema.ipynb).
+
+## **Intermediate Output**
+
+As your LLM architecture grows in complexity, it naturally begins to take **longer to execute**.  
+
+- Multiple steps in **sequence**
+- Steps **inside a loop**
+
+...these are signs that the **end-to-end latency** of the system is increasing.
+
+---
+
+This rise in latency can be a **major usability concern**.  
+Users expect some kind of response from a system within just a few seconds.  
+Delays without feedback can lead to confusion or abandonment.
+
+---
+
+**How to Address Latency: Streaming Output**
+
+One effective strategy is to **stream intermediate output** while the application is still running.  
+This helps keep the user informed and engaged, even during longer processing times.
+
+---
+
+To stream intermediate output in **LangGraph**, you simply:
+
+- Invoke the graph using the `.stream()` method
+- This method yields the output of **each node** as it completes
+
+---
+
+Let’s see what this looks like in the following code snippet:
+```python
+
+input = {
+    "messages": [
+        HumanMessage("""How old was the 30th president of the United States 
+            when he died?""")
+    ]
+}
+for c in graph.stream(input, stream_mode='updates'):
+    print(c)
+```
+
+The generated output:
+```JSON
+{
+    "select_tools": {
+        "selected_tools": ['duckduckgo_search', 'calculator']
+    }
+}
+{
+    "model": {
+        "messages": AIMessage(
+            content="",
+            tool_calls=[
+                {
+                    "name": "duckduckgo_search",
+                    "args": {
+                        "query": "30th president of the United States"
+                    },
+                    "id": "9ed4328dcdea4904b1b54487e343a373",
+                    "type": "tool_call",
+                }
+            ],
+        )
+    }
+}
+{
+    "tools": {
+        "messages": [
+            ToolMessage(
+                content="Calvin Coolidge (born July 4, 1872, Plymouth, Vermont, 
+                    U.S.—died January 5, 1933, Northampton, Massachusetts) was 
+                    the 30th president of the United States (1923-29). Coolidge 
+                    acceded to the presidency after the death in office of 
+                    Warren G. Harding, just as the Harding scandals were coming 
+                    to light....",
+                name="duckduckgo_search",
+                tool_call_id="9ed4328dcdea4904b1b54487e343a373",
+            )
+        ]
+    }
+}
+{
+    "model": {
+        "messages": AIMessage(
+            content="Calvin Coolidge, the 30th president of the United States, 
+                was born on July 4, 1872, and died on January 5, 1933. To 
+                calculate his age at the time of his death, we can subtract his 
+                birth year from his death year. \n\nAge at death = Death year - 
+                Birth year\nAge at death = 1933 - 1872\nAge at death = 61 
+                years\n\nCalvin Coolidge was 61 years old when he died.",
+        )
+    }
+}
+```
+
+Notice how each **output entry** from the `.stream()` method is a **dictionary**,  
+where:
+
+- The **key** is the name of the node that just finished executing
+- The **value** is the output produced by that node
+
+This format provides two key pieces of information:
+
+1. **Which node just executed**  
+   - Useful for tracking progress through the graph
+   - Can be displayed to the user to show which step is currently running
+
+2. **What the node returned**  
+   - Allows you to inspect intermediate results
+   - Can be used for logging, debugging, or displaying real-time feedback to the user
+
+This structure makes it easy to build interactive and transparent LLM applications  
+where users can follow the system’s reasoning and actions step by step.
+
+In addition to the default behavior, **LangGraph supports multiple stream modes**  
+to give you greater control over how intermediate output is handled and visualized.
+
+---
+
+**Available Stream Modes**
+
+1. **updates**  
+   - This is the **default mode**.  
+   - Yields a dictionary with the **node name as the key** and the **node’s output as the value**,  
+     every time a node completes execution.
+
+2. **values**  
+   - Yields the **entire current state** of the graph after each set of nodes completes.  
+   - Useful when your output display closely tracks the overall **graph state**.
+
+3. **debug**  
+   - Emits detailed **internal events**, including:
+     - `checkpoint`: when a new state checkpoint is saved to the database
+     - `task`: when a node is about to start
+     - `task_result`: when a node completes execution
+   - Helpful for logging, diagnostics, and advanced workflows.
+
+---
+
+## **Streaming LLM Output Token-by-Token**
+
+In some cases, you may want to stream the **output of each LLM call token-by-token**,  
+rather than waiting for the full response to be generated.
+
+This is especially useful in interactive applications such as:
+
+- **Chatbots**, where you want each word or phrase to appear in real time
+- **Typing simulations**, to enhance the user experience
+- **Live feedback**, when showing progressive model thinking or partial answers
+
+---
+
+**Using LangGraph for Token Streaming**
+
+LangGraph supports this capability as well.  
+You can enable streaming at the **LLM node level** by configuring the model to return output incrementally.
+
+When set up correctly:
+
+- Each **LLM node** will yield **partial outputs token-by-token**
+- These can be rendered immediately in your user interface
+- The rest of the LangGraph graph (tool nodes, routing, etc.) can continue to operate normally
+
+---
+
+This makes LangGraph suitable for building rich, real-time AI experiences  
+that require **low latency feedback** and high **interactivity**.
+
+Let’s take a look at how to configure an LLM node to enable token-level streaming.
+
+```python
+input = {
+    "messages": [
+        HumanMessage("""How old was the 30th president of the United States 
+            when he died?""")
+    ]
+}
+output = app.astream_events(input, version="v2")
+
+async for event in output:
+    if event["event"] == "on_chat_model_stream":
+        content = event["data"]["chunk"].content
+        if content:
+            print(content)
+```
+
+This will emit each word (technically each token) as soon as it is received from the LLM. 
+
+## **Human-in-the-Loop Modalities**
+
+As we move up the **autonomy (or agency) ladder**, we increasingly trade off **control**  
+for greater **capability** and **decision-making power** by the LLM.
+
+The **shared state pattern** used in LangGraph makes it easier to:
+
+- **Observe** the system’s internal decisions
+- **Interrupt** or halt execution
+- **Modify** state mid-execution
+
+This enables a wide range of **human-in-the-loop (HITL) modes**,  
+where either the developer or end user can influence the LLM’s behavior during runtime.
+
+Let's see an [example](src/human_in_the_loop.ipynb)
 
 ## Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
