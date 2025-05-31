@@ -1162,11 +1162,269 @@ where either the developer or end user can influence the LLM’s behavior during
 
 Let's see an [example](src/human_in_the_loop.ipynb)
 
-## Useful metrics while fine-tunning a LLM model:
+# **Testing Techniques Across the LLM App Development Cycle**
+
+Before building a full testing system, it’s important to understand how testing applies  
+to each stage of the LLM application lifecycle. Testing is not a one-time activity—  
+it is a continuous process integrated into every phase of development.
+
+---
+
+## **Design**
+
+- Tests are applied **directly within the application logic**.
+- These often include **runtime assertions** and **automated checks**.
+- Failures can be **fed back into the LLM** to support self-correction.
+- Goal: **Catch errors early** before they affect end users.
+
+### The Design Stage: Self-Corrective RAG
+
+Your application can handle errors at runtime by passing failures to the LLM for correction. This is useful in RAG scenarios where hallucinations often occur due to poor or incomplete retrieval.
+
+To reduce hallucinations, use the LLM to assess the relevance of retrieved documents. If the content is judged irrelevant, the retrieval process can be adjusted and repeated.
+
+LangGraph supports this setup by defining the process flow:
+
+Let's see an [example](src/Self_Corrective_RAG.ipynb)
+
+---
+
+## **Preproduction**
+
+- Testing occurs **just before deployment**.
+- This stage is used to:
+  - Run **automated regression tests**
+  - Validate new features
+  - Ensure recent changes **don’t break existing behavior**
+- Goal: Catch issues before **real users** interact with the application.
+
+**The Preproduction Stage**  
+This stage aims to evaluate the performance of your application before deployment, helping assess its accuracy, latency, and cost when using the LLM.
+
+**Creating Datasets**  
+Before testing, define the scenarios you want to evaluate. A dataset consists of input-output pairs used to assess your LLM app.
+
+**Common dataset creation methods:**
+
+- **Manually curated examples**  
+  Handwritten cases reflecting expected user inputs and ideal outputs. Start with 10–50 quality examples and expand with production edge cases.
+
+- **Application logs**  
+  After deployment, real user inputs can be logged and later incorporated into the dataset to ensure realism and relevance.
+
+- **Synthetic data**  
+  Artificially generated examples to simulate different scenarios or edge cases. Useful when real data is limited, allowing new inputs to be sampled from existing ones.
+
+**Defining Your Evaluation Criteria**  
+Once your dataset is ready, establish evaluation metrics to assess your app’s outputs before production. This process, called offline evaluation, involves testing against a predefined suite.
+
+**Offline Evaluation**  
+You can optionally provide labeled expected outputs (ground truth references) for each data point. This allows for direct comparison between your application’s responses and the ground truth.
+
+### **Evaluation Methods for LLM App Performance**
+
+1. **Human Evaluators**  
+   Use human feedback when testing criteria can't be easily encoded. LangSmith supports this through annotation queues for streamlined review and scoring.
+
+2. **Heuristic Evaluators**  
+   Use hardcoded functions to compute scores. These include:
+   - *Reference-free*: Validates output format (e.g., is it valid JSON?).
+   - *Reference-based*: Compares output to a known ground truth.  
+   Ideal for tasks like schema validation or unit testing.
+
+3. **LLM-as-a-Judge Evaluators**  
+   Encode grading rules into an LLM prompt to assess output correctness relative to reference answers.  
+   Start with heuristic evaluators, add human review, then scale with LLM-as-a-judge.  
+
+>**Note:** Use clear, human-understandable prompts for LLM grading. Avoid vague scoring ranges like 0–10 without distinct criteria.
+
+**Improving LLM-as-a-Judge Evaluator Performance**
+
+LLM-as-a-judge evaluation involves using a separate LLM to grade the output of another LLM. To ensure its reliability:
+
+1. **Challenge**  
+   Accuracy often requires rounds of prompt tuning, which can be slow and complex.
+
+2. **Solution: Few-Shot Prompting in LangSmith**  
+   LangSmith enables a feedback loop using few-shot learning:
+   
+   - The evaluator LLM grades outputs (e.g., for correctness or relevance).
+   - Human reviewers correct or adjust this feedback, capturing preferences.
+   - These corrections are stored as few-shot examples, optionally with explanations.
+   - Future evaluations include these examples in the prompt to guide the LLM.
+
+3. **Outcome**  
+   The evaluator becomes more accurate over time, better reflecting human judgment. This reduces the need for repetitive prompt engineering and improves grading consistency.
+
+### **Pairwise Evaluation**
+
+Pairwise evaluation involves comparing two LLM outputs side by side to determine which one better meets specific criteria (e.g., informativeness, specificity, safety). This method is often easier for humans and LLM-as-a-judge evaluators.
+
+LangSmith supports pairwise evaluation with features that allow you to:
+
+1. **Create Custom Evaluators**  
+   Define pairwise evaluators using your preferred criteria.
+
+2. **Run Comparisons**  
+   Assess outputs from different application versions to identify the preferred one.
+
+3. **Visualize Results**  
+   LangSmith provides tools to visualize and track generation preferences clearly.
+
+This approach streamlines evaluation and helps guide improvements through direct output comparisons.
+
+### **Regression Testing**
+
+In traditional software, tests are expected to pass 100% to ensure stable functionality. However, in AI applications, output performance can vary due to model drift or updates.
+
+Key implications:
+
+1. **Track Performance Over Time**  
+   Monitor test results to detect any decline in performance following changes or updates.
+
+2. **Compare Runs**  
+   Analyze individual data points across multiple experimental runs to identify improvements or regressions.
+
+Regression testing helps maintain and improve model reliability by ensuring updates don’t reduce accuracy or overall quality.
+
+### **Evaluating an Agent’s End-to-End Performance**
+
+Agents use tool calling, planning, and memory to execute workflows, but testing their performance is challenging due to variability in control flow and outcomes.
+
+To evaluate agents effectively, consider testing at three levels:
+
+1. **Response**  
+   Focus on the final response to assess end-to-end performance.  
+   - **Input**: Prompt + optional tools  
+   - **Output**: Final response from the agent
+
+2. **Single Step**  
+   Examine specific decisions or tool calls to evaluate individual steps.  
+   - **Output**: A tool call
+
+3. **Trajectory**  
+   Analyze the entire decision-making process and sequence of actions.  
+   - **Output**: List of tool calls executed by the agent
+
+### **Testing an Agent’s Final Response**
+
+To evaluate an agent’s ability to complete tasks, treat it as a black box and judge based on the success of the final output.
+
+**Typical Setup:**
+
+1. **Inputs**  
+   - User input  
+   - Optional: predefined tools
+
+2. **Output**  
+   - Final response from the agent
+
+3. **Evaluator**  
+   - LLM-as-a-judge to assess accuracy and quality
+
+**Implementation Tip:**  
+Start by creating a dataset containing prompts and expected outputs for comparison during evaluation. See the following [example](src/testing_agent_response.ipynb).
+
+
+---
+
+## **Production**
+
+- Testing is performed **while the application is live**.
+- Methods may include:
+  - Monitoring logs
+  - Anomaly detection
+  - Triggering alerts for unexpected behavior
+- Results are used to:
+  - Identify real-world issues
+  - Feed insights back into the **design and preproduction** stages
+- Goal: **Observe, diagnose, and iterate** in response to user-facing problems.
+
+**Production**
+
+Testing in production is essential, as some bugs and edge cases only surface when interacting with real users. These issues can affect performance (latency), and the accuracy or relevance of the outputs. Observability and online evaluation help enforce guardrails, offering protection against prompt injection and toxicity.
+
+### **Tracing**
+
+1. **Purpose of Tracing**  
+   - A trace represents the complete sequence of operations your app performs from input to output.
+   - LangSmith enables you to visualize, debug, and test each trace.
+
+2. **Setup Requirements**  
+   - Install the necessary LangChain and LLM dependencies.
+   - Configure environment variables using your LangSmith account credentials to activate tracing.
+
+```bash
+export LANGCHAIN_TRACING_V2=true
+export LANGCHAIN_API_KEY=<your-api-key>
+
+# The below examples use the OpenAI API, though you can use other LLM providers
+
+export OPENAI_API_KEY=<your-openai-api-key>
+```
+
+>> **Note**: Azure AI Foundry also allow tracing of your Azure deployment, you can read more here: [https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/langchain#tracing](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/langchain#tracing)
+
+Let's see an example using Azure AI Foundry: [src/AI_Foundry_Tracing.ipynb](src/AI_Foundry_Tracing.ipynb)
+
+### **Collect Feedback in Production**
+
+In the production phase, online evaluation is used since there are no predefined reference responses. Evaluators must score outputs in real time as the application processes user inputs.
+
+**Types of Feedback**
+
+1. **User Feedback**
+   - Can be explicit (e.g., like/dislike buttons, written comments) or implicit (e.g., user interaction patterns).
+   - LangSmith allows attaching feedback to any trace or intermediate span.
+   - Feedback can be reviewed inline or managed through annotation queues.
+
+2. **LLM-as-a-Judge Feedback**
+   - Evaluates outputs directly on traces.
+   - Helps identify hallucinations or toxic content.
+   - Can be integrated with LangSmith’s tracing and evaluation features.
+
+Note: LangSmith’s Datasets & Experiments section enables auto evaluation setup.
+
+### **Classification and Tagging**
+
+To build effective guardrails (e.g., for toxicity) or derive insights (e.g., sentiment analysis), it's essential to implement a labeling system for user inputs and model outputs.
+
+- **Without Reference Labels**
+  - Use **LLM-as-a-judge evaluators**.
+  - Perform classification and tagging based on defined criteria.
+
+- **With Reference Labels**
+  - Use **custom heuristic evaluators**.
+  - Score model outputs against the known ground truth class labels.
+
+### **Monitoring and Fixing Errors**
+
+- Use **LangSmith tracing** to detect errors and edge cases in production.
+  - Add these errors to your **offline evaluation dataset** to avoid repeated issues.
+
+- **Phased release strategy**:
+  - Start with a **small group of beta users** before a full launch.
+  - Helps uncover critical bugs early.
+  - Aids in building a reliable evaluation dataset with ground truth.
+  - Allows for evaluation of **cost**, **latency**, and **output quality**.
+
+---
+
+## **Continuous Improvement Loop**
+
+Combining all three stages creates a cycle of continuous refinement:
+
+`Design → Test → Deploy → Monitor → Fix → Redesign`
+
+This loop ensures the app gets **smarter, more robust, and more user-friendly** over time.
+
+
+
+# Useful metrics while fine-tunning a LLM model:
 - **Loss**: This ranges from 0 to infinity. Indicates how well the model fits the training data. While validation loss shows how effective the model is at generalizing to new data. Lower loss values are better.
 - **Perplexity**: This ranges from 1 to infinity: It measures a language model's ability to predict the next token in a sequence. Lower perplexity values are better.
 
-## Summary of large documents
+# Summary of large documents
 This can be done using *load_summarize_chain* method using *map_reduce* chain type. Here is a basic example of how to use it:
 ```python
 from langchain.chains.summarize import load_summarize_chain
